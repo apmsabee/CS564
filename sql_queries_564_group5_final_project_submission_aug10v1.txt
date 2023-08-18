@@ -1,0 +1,711 @@
+/*
+Query 1
+To retrieve the count of boundaries (6s and 4s) hit, with filters applied for a specific season, date, team, opposite team (opposition), innings, batter and bowler.
+*/
+SELECT CORE.runs_scored AS Boundary_Type, COUNT(*) AS Number_of_Boundaries
+FROM
+	(SELECT B3.*, M1.match_date,  YEAR(match_date) AS season
+	FROM
+		(SELECT B2.*, PPMT2.player_name AS bowler_name,PPMT2.team_name AS bowler_team_name
+		FROM 
+			(SELECT B1.*, PPMT1.player_name AS batter_name, PPMT1.team_name AS batter_team_name
+			FROM 
+				(SELECT * 
+				FROM Ball 
+				WHERE runs_scored IN (4, 6) AND innings_no = 1)  B1
+			INNER JOIN (
+						SELECT PPM1.*, T1.team_name
+						FROM
+							(SELECT PM1.*, P1.player_name
+							FROM Player_Match PM1
+							INNER JOIN 
+									(SELECT * 
+									FROM Player
+									WHERE player_name = 'V Kohli' ) P1
+									ON PM1.player_id = P1.player_id)PPM1
+						INNER JOIN 
+								(SELECT * 
+								FROM Team 
+								WHERE team_name = 'Royal Challengers Bangalore')T1  
+								ON PPM1.player_team_id = T1.team_id)PPMT1
+						ON B1.striker = PPMT1.player_id AND B1.match_id = PPMT1.match_id)B2
+		INNER JOIN (
+					SELECT PPM2.*, T2.team_name
+					FROM
+						(SELECT PM2.*, P2.player_name
+						FROM Player_Match PM2
+						INNER JOIN 
+								(SELECT * 
+								FROM Player 
+								WHERE player_name = 'S Kaushik')P2
+								ON PM2.player_id = P2.player_id)PPM2
+					INNER JOIN 
+							(SELECT * 
+							FROM Team 
+							WHERE team_name = 'Gujarat Lions')T2 
+							ON PPM2.player_team_id = T2.team_id)PPMT2
+					ON B2.bowler = PPMT2.player_id AND B2.match_id = PPMT2.match_id) B3
+	INNER JOIN 
+			(SELECT * 
+			FROM Matchinfo 
+			WHERE match_date = '2016-05-14' AND YEAR(match_date) = 2016)M1
+			ON B3.match_id = M1.match_id) CORE 
+GROUP BY CORE.runs_scored;
+
+
+				
+/*
+Query 2
+To retrieve the runs scored by over, with filters applied for a specific season, date, team, opposite team (opposition), innings, batter and bowler.
+*/
+SELECT CORE.over_no AS over_number, SUM(CORE.runs_scored) AS runs_scored
+FROM
+	(SELECT B3.*, M1.match_date,  YEAR(match_date) AS season
+	FROM
+		(SELECT B2.*, PPMT2.player_name AS bowler_name,PPMT2.team_name AS bowler_team_name
+		FROM 
+			(SELECT B1.*, PPMT1.player_name AS batter_name, PPMT1.team_name AS batter_team_name
+			FROM 
+				(SELECT * 
+				FROM Ball 
+				WHERE innings_no = 1)  B1
+			INNER JOIN (
+						SELECT PPM1.*, T1.team_name
+						FROM
+							(SELECT PM1.*, P1.player_name
+							FROM Player_Match PM1
+							INNER JOIN 
+									(SELECT * 
+									FROM Player
+									WHERE player_name = 'V Kohli' ) P1
+									ON PM1.player_id = P1.player_id)PPM1
+						INNER JOIN 
+								(SELECT * 
+								FROM Team 
+								WHERE team_name = 'Royal Challengers Bangalore')T1  
+								ON PPM1.player_team_id = T1.team_id)PPMT1
+						ON B1.striker = PPMT1.player_id AND B1.match_id = PPMT1.match_id)B2
+		INNER JOIN (
+					SELECT PPM2.*, T2.team_name
+					FROM
+						(SELECT PM2.*, P2.player_name
+						FROM Player_Match PM2
+						INNER JOIN 
+								(SELECT * 
+								FROM Player 
+								WHERE player_name = 'S Kaushik')P2
+								ON PM2.player_id = P2.player_id)PPM2
+					INNER JOIN 
+							(SELECT * 
+							FROM Team 
+							WHERE team_name = 'Gujarat Lions')T2 
+							ON PPM2.player_team_id = T2.team_id)PPMT2
+					ON B2.bowler = PPMT2.player_id AND B2.match_id = PPMT2.match_id) B3
+	INNER JOIN 
+			(SELECT * 
+			FROM Matchinfo 
+			WHERE match_date = '2016-05-14' AND YEAR(match_date) = 2016)M1
+			ON B3.match_id = M1.match_id) CORE 
+GROUP BY CORE.over_no;
+
+
+				
+/*
+Query 3
+To retrieve the count of wickets by type, with filters applied for a specific season, date, team, opposite team (opposition), innings, and bowler.
+Note: Batter Name filter has been excluded compared to the front end/dashboard design to get more information (wickets) for testing purposes (makes more sense for standalone query). However, while using this query for dashboard, we have all filters(including the batter name).
+*/
+SELECT CORE.out_type AS Wicket_Type, COUNT(*) AS Number_of_Wickets
+FROM
+	(SELECT B3.*, M1.match_date,  YEAR(match_date) AS season
+	FROM
+		(SELECT B2.*, PPMT2.player_name AS bowler_name,PPMT2.team_name AS bowler_team_name
+		FROM 
+			(SELECT B1.*, PPMT1.player_name AS batter_name, PPMT1.team_name AS batter_team_name
+			FROM 
+				(SELECT * 
+				FROM Ball 
+				WHERE out_type NOT IN ('Not Applicable','obstructing the field','retired hurt','run out') AND innings_no = 1)  B1
+			INNER JOIN (
+						SELECT PPM1.*, T1.team_name
+						FROM
+							(SELECT PM1.*, P1.player_name
+							FROM Player_Match PM1
+							INNER JOIN 
+									(SELECT * 
+									FROM Player
+									 ) P1
+									ON PM1.player_id = P1.player_id)PPM1
+						INNER JOIN 
+								(SELECT * 
+								FROM Team 
+								WHERE team_name = 'Sunrisers Hyderabad')T1  
+								ON PPM1.player_team_id = T1.team_id)PPMT1
+						ON B1.striker = PPMT1.player_id AND B1.match_id = PPMT1.match_id)B2
+		INNER JOIN (
+					SELECT PPM2.*, T2.team_name
+					FROM
+						(SELECT PM2.*, P2.player_name
+						FROM Player_Match PM2
+						INNER JOIN 
+								(SELECT * 
+								FROM Player 
+								WHERE player_name = 'A Zampa')P2
+								ON PM2.player_id = P2.player_id)PPM2
+					INNER JOIN 
+							(SELECT * 
+							FROM Team 
+							WHERE team_name = 'Rising Pune Supergiants')T2 
+							ON PPM2.player_team_id = T2.team_id)PPMT2
+					ON B2.bowler = PPMT2.player_id AND B2.match_id = PPMT2.match_id) B3
+	INNER JOIN 
+			(SELECT * 
+			FROM Matchinfo 
+			WHERE match_date = '2016-05-10' AND YEAR(match_date) = 2016)M1
+			ON B3.match_id = M1.match_id) CORE 
+GROUP BY CORE.out_type;
+
+
+
+
+/*
+Query 4
+To retrieve the count of wickets by over, with filters applied for a specific season, date, team, opposite team (opposition), innings and bowler.
+Note: Batter Name filter has been excluded compared to the front end/dashboard design to get more information (wickets) for testing purposes (makes more sense for standalone query). However, while using this query for dashboard, we  have all filters(including the batter name).
+
+*/
+SELECT CORE.over_no AS Over_Number, COUNT(*) AS Number_of_Wickets
+FROM
+	(SELECT B3.*, M1.match_date,  YEAR(match_date) AS season
+	FROM
+		(SELECT B2.*, PPMT2.player_name AS bowler_name,PPMT2.team_name AS bowler_team_name
+		FROM 
+			(SELECT B1.*, PPMT1.player_name AS batter_name, PPMT1.team_name AS batter_team_name
+			FROM 
+				(SELECT * 
+				FROM Ball 
+				WHERE out_type NOT IN ('Not Applicable','obstructing the field','retired hurt','run out') AND innings_no = 1)  B1
+			INNER JOIN (
+						SELECT PPM1.*, T1.team_name
+						FROM
+							(SELECT PM1.*, P1.player_name
+							FROM Player_Match PM1
+							INNER JOIN 
+									(SELECT * 
+									FROM Player
+									) P1
+									ON PM1.player_id = P1.player_id)PPM1
+						INNER JOIN 
+								(SELECT * 
+								FROM Team 
+								WHERE team_name = 'Sunrisers Hyderabad')T1  
+								ON PPM1.player_team_id = T1.team_id)PPMT1
+						ON B1.striker = PPMT1.player_id AND B1.match_id = PPMT1.match_id)B2
+		INNER JOIN (
+					SELECT PPM2.*, T2.team_name
+					FROM
+						(SELECT PM2.*, P2.player_name
+						FROM Player_Match PM2
+						INNER JOIN 
+								(SELECT * 
+								FROM Player 
+								WHERE player_name = 'A Zampa')P2
+								ON PM2.player_id = P2.player_id)PPM2
+					INNER JOIN 
+							(SELECT * 
+							FROM Team 
+							WHERE team_name = 'Rising Pune Supergiants')T2 
+							ON PPM2.player_team_id = T2.team_id)PPMT2
+					ON B2.bowler = PPMT2.player_id AND B2.match_id = PPMT2.match_id) B3
+	INNER JOIN 
+			(SELECT * 
+			FROM Matchinfo 
+			WHERE match_date = '2016-05-10' AND YEAR(match_date) = 2016)M1
+			ON B3.match_id = M1.match_id) CORE 
+GROUP BY CORE.over_no;
+
+
+
+
+/*
+Query 5
+To retrieve Top 5 Batters based on runs scored, with filters applied for a specific season, date, team, opposite team (opposition), innings and bowler.
+Note: Batter Name filter has been excluded compared to the front end/dashboard design to get more information (different batters) for testing purposes (makes more sense for standalone query). However, while using this query for dashboard, we have all filters(including the batter name).
+
+*/
+SELECT batter_name, SUM(runs_scored) AS total_runs_scored
+FROM
+	(SELECT B3.*, M1.match_date,  YEAR(match_date) AS season
+	FROM
+		(SELECT B2.*, PPMT2.player_name AS bowler_name,PPMT2.team_name AS bowler_team_name
+		FROM 
+			(SELECT B1.*, PPMT1.player_name AS batter_name, PPMT1.team_name AS batter_team_name
+			FROM 
+				(SELECT * 
+				FROM Ball 
+				WHERE innings_no = 1)  B1
+			INNER JOIN (
+						SELECT PPM1.*, T1.team_name
+						FROM
+							(SELECT PM1.*, P1.player_name
+							FROM Player_Match PM1
+							INNER JOIN 
+									(SELECT * 
+									FROM Player
+									) P1
+									ON PM1.player_id = P1.player_id)PPM1
+						INNER JOIN 
+								(SELECT * 
+								FROM Team 
+								WHERE team_name = 'Sunrisers Hyderabad')T1  
+								ON PPM1.player_team_id = T1.team_id)PPMT1
+						ON B1.striker = PPMT1.player_id AND B1.match_id = PPMT1.match_id)B2
+		INNER JOIN (
+					SELECT PPM2.*, T2.team_name
+					FROM
+						(SELECT PM2.*, P2.player_name
+						FROM Player_Match PM2
+						INNER JOIN 
+								(SELECT * 
+								FROM Player 
+								WHERE player_name = 'A Zampa')P2
+								ON PM2.player_id = P2.player_id)PPM2
+					INNER JOIN 
+							(SELECT * 
+							FROM Team 
+							WHERE team_name = 'Rising Pune Supergiants')T2 
+							ON PPM2.player_team_id = T2.team_id)PPMT2
+					ON B2.bowler = PPMT2.player_id AND B2.match_id = PPMT2.match_id) B3
+	INNER JOIN 
+			(SELECT * 
+			FROM Matchinfo 
+			WHERE match_date = '2016-05-10' AND YEAR(match_date) = 2016)M1
+			ON B3.match_id = M1.match_id) CORE 
+GROUP BY batter_name
+HAVING total_runs_scored >= 
+(SELECT MIN(total_runs_scored)
+FROM 
+(SELECT DISTINCT total_runs_scored
+FROM 
+(SELECT batter_name, SUM(runs_scored) AS total_runs_scored
+FROM
+	(SELECT B3.*, M1.match_date,  YEAR(match_date) AS season
+	FROM
+		(SELECT B2.*, PPMT2.player_name AS bowler_name,PPMT2.team_name AS bowler_team_name
+		FROM 
+			(SELECT B1.*, PPMT1.player_name AS batter_name, PPMT1.team_name AS batter_team_name
+			FROM 
+				(SELECT * 
+				FROM Ball 
+				WHERE innings_no = 1)  B1
+			INNER JOIN (
+						SELECT PPM1.*, T1.team_name
+						FROM
+							(SELECT PM1.*, P1.player_name
+							FROM Player_Match PM1
+							INNER JOIN 
+									(SELECT * 
+									FROM Player
+									) P1
+									ON PM1.player_id = P1.player_id)PPM1
+						INNER JOIN 
+								(SELECT * 
+								FROM Team 
+								WHERE team_name = 'Sunrisers Hyderabad')T1  
+								ON PPM1.player_team_id = T1.team_id)PPMT1
+						ON B1.striker = PPMT1.player_id AND B1.match_id = PPMT1.match_id)B2
+		INNER JOIN (
+					SELECT PPM2.*, T2.team_name
+					FROM
+						(SELECT PM2.*, P2.player_name
+						FROM Player_Match PM2
+						INNER JOIN 
+								(SELECT * 
+								FROM Player 
+								WHERE player_name = 'A Zampa')P2
+								ON PM2.player_id = P2.player_id)PPM2
+					INNER JOIN 
+							(SELECT * 
+							FROM Team 
+							WHERE team_name = 'Rising Pune Supergiants')T2 
+							ON PPM2.player_team_id = T2.team_id)PPMT2
+					ON B2.bowler = PPMT2.player_id AND B2.match_id = PPMT2.match_id) B3
+	INNER JOIN 
+			(SELECT * 
+			FROM Matchinfo 
+			WHERE match_date = '2016-05-10' AND YEAR(match_date) = 2016)M1
+			ON B3.match_id = M1.match_id) CORE2 
+GROUP BY batter_name
+HAVING total_runs_scored>0 )CORE3
+ORDER BY total_runs_scored DESC
+LIMIT 5)CORE4)
+ORDER BY total_runs_scored DESC 
+
+;
+
+
+
+/*
+Query 6
+To retrieve Top 5 wicket takers, with filters applied for a specific season, date, team, opposite team (opposition), innings.
+Note: Batter and Bowler Name filter has been excluded compared to the front end/dashboard design to get more information (different bowlers wickets of different batters) for testing purposes (makes more sense for standalone query). However, while using this query for dashboard, we have all filters(including the batter and bowler name).
+
+*/
+SELECT bowler_name, COUNT(*) AS Number_of_Wickets
+FROM
+	(SELECT B3.*, M1.match_date,  YEAR(match_date) AS season
+	FROM
+		(SELECT B2.*, PPMT2.player_name AS bowler_name,PPMT2.team_name AS bowler_team_name
+		FROM 
+			(SELECT B1.*, PPMT1.player_name AS batter_name, PPMT1.team_name AS batter_team_name
+			FROM 
+				(SELECT * 
+				FROM Ball 
+				WHERE out_type NOT IN ('Not Applicable','obstructing the field','retired hurt','run out') AND innings_no = 1)  B1
+			INNER JOIN (
+						SELECT PPM1.*, T1.team_name
+						FROM
+							(SELECT PM1.*, P1.player_name
+							FROM Player_Match PM1
+							INNER JOIN 
+									(SELECT * 
+									FROM Player
+									) P1
+									ON PM1.player_id = P1.player_id)PPM1
+						INNER JOIN 
+								(SELECT * 
+								FROM Team 
+								WHERE team_name = 'Royal Challengers Bangalore')T1  
+								ON PPM1.player_team_id = T1.team_id)PPMT1
+						ON B1.striker = PPMT1.player_id AND B1.match_id = PPMT1.match_id)B2
+		INNER JOIN (
+					SELECT PPM2.*, T2.team_name
+					FROM
+						(SELECT PM2.*, P2.player_name
+						FROM Player_Match PM2
+						INNER JOIN 
+								(SELECT * 
+								FROM Player 
+								)P2
+								ON PM2.player_id = P2.player_id)PPM2
+					INNER JOIN 
+							(SELECT * 
+							FROM Team 
+							WHERE team_name = 'Gujarat Lions')T2 
+							ON PPM2.player_team_id = T2.team_id)PPMT2
+					ON B2.bowler = PPMT2.player_id AND B2.match_id = PPMT2.match_id) B3
+	INNER JOIN 
+			(SELECT * 
+			FROM Matchinfo 
+			WHERE match_date = '2016-05-14' AND YEAR(match_date) = 2016)M1
+			ON B3.match_id = M1.match_id) CORE 
+GROUP BY bowler_name
+HAVING Number_of_Wickets >=
+(SELECT MIN(Number_of_Wickets)
+FROM
+(SELECT DISTINCT Number_of_Wickets
+FROM 
+(SELECT bowler_name, COUNT(*) AS Number_of_Wickets
+FROM
+	(SELECT B3.*, M1.match_date,  YEAR(match_date) AS season
+	FROM
+		(SELECT B2.*, PPMT2.player_name AS bowler_name,PPMT2.team_name AS bowler_team_name
+		FROM 
+			(SELECT B1.*, PPMT1.player_name AS batter_name, PPMT1.team_name AS batter_team_name
+			FROM 
+				(SELECT * 
+				FROM Ball 
+				WHERE out_type NOT IN ('Not Applicable','obstructing the field','retired hurt','run out') AND innings_no = 1)  B1
+			INNER JOIN (
+						SELECT PPM1.*, T1.team_name
+						FROM
+							(SELECT PM1.*, P1.player_name
+							FROM Player_Match PM1
+							INNER JOIN 
+									(SELECT * 
+									FROM Player
+									) P1
+									ON PM1.player_id = P1.player_id)PPM1
+						INNER JOIN 
+								(SELECT * 
+								FROM Team 
+								WHERE team_name = 'Royal Challengers Bangalore')T1  
+								ON PPM1.player_team_id = T1.team_id)PPMT1
+						ON B1.striker = PPMT1.player_id AND B1.match_id = PPMT1.match_id)B2
+		INNER JOIN (
+					SELECT PPM2.*, T2.team_name
+					FROM
+						(SELECT PM2.*, P2.player_name
+						FROM Player_Match PM2
+						INNER JOIN 
+								(SELECT * 
+								FROM Player 
+								)P2
+								ON PM2.player_id = P2.player_id)PPM2
+					INNER JOIN 
+							(SELECT * 
+							FROM Team 
+							WHERE team_name = 'Gujarat Lions')T2 
+							ON PPM2.player_team_id = T2.team_id)PPMT2
+					ON B2.bowler = PPMT2.player_id AND B2.match_id = PPMT2.match_id) B3
+	INNER JOIN 
+			(SELECT * 
+			FROM Matchinfo 
+			WHERE match_date = '2016-05-14' AND YEAR(match_date) = 2016)M1
+			ON B3.match_id = M1.match_id) CORE2 
+GROUP BY bowler_name)CORE3
+ORDER BY Number_of_Wickets DESC
+LIMIT 5)CORE4)
+ORDER BY Number_of_Wickets DESC;
+
+
+
+
+
+/*
+Query 7
+To retrieve a specific Player stats (# Matches, Runs scored and batter strike rate (runs scored/balls faced)*100), with filters applied for a specific season, date, team, opposite team (opposition)
+*/
+SELECT COUNT(DISTINCT PM6.match_id) AS number_of_matches, SUM(PM6.runs_scored) AS runs_scored, (SUM(PM6.runs_scored)/COUNT(PM6.runs_scored))*100 AS batter_strike_rate
+FROM
+	(SELECT PMM.*, B1.runs_scored
+	FROM 
+		(SELECT PM5.*
+		FROM
+			(SELECT PM4.*, T2.team_name AS opposite_team_name
+			FROM
+				(SELECT PM3.*, T1.team_name AS player_team_name
+				FROM
+					(SELECT DISTINCT PM1.*, PM2.player_team_id AS opposite_team_id
+					FROM 
+						(SELECT DISTINCT PM0.player_id,PM0.match_id,PM0.player_team_id, P1.player_name 
+						FROM
+						Player_Match PM0
+						INNER JOIN 
+								(SELECT DISTINCT player_id, player_name  
+								FROM Player 
+								WHERE player_name = 'V Kohli') P1
+								ON PM0.player_id = P1.player_id) PM1
+					INNER JOIN 
+							(SELECT DISTINCT match_id, player_team_id
+							FROM Player_Match) PM2
+							ON PM1.match_id = PM2.match_id AND PM1.player_team_id <> PM2.player_team_id)PM3
+				INNER JOIN 
+						(SELECT DISTINCT team_id, team_name 
+						FROM Team
+						WHERE team_name = 'Royal Challengers Bangalore') T1
+						ON PM3.player_team_id = T1.team_id)PM4
+			INNER JOIN
+					(SELECT DISTINCT team_id, team_name 
+					FROM Team
+					WHERE team_name = 'Gujarat Lions') T2
+					ON PM4.opposite_team_id = T2.team_id)PM5
+		INNER JOIN 
+				(SELECT DISTINCT match_id
+				FROM Matchinfo
+				WHERE match_date = '2016-05-14' AND YEAR(match_date) = 2016)M1
+				ON PM5.match_id = M1.match_id) PMM
+	LEFT JOIN 
+			(SELECT match_id, runs_scored, striker
+			FROM Ball) B1
+			ON PMM.match_id = B1.match_id AND PMM.player_id = B1.striker)PM6
+GROUP BY PM6.player_name;
+				
+
+
+
+
+
+/*
+Query 8
+To retrieve a specific Player stats (# Wickets), with filters applied for a specific season, date, team, opposite team (opposition)
+*/
+
+SELECT  COUNT(PM6.out_type) AS number_of_wickets 
+FROM
+	(SELECT PMM.*, B3.out_type
+	FROM 
+		(SELECT PM5.*
+		FROM
+			(SELECT PM4.*, T2.team_name AS opposite_team_name
+			FROM
+				(SELECT PM3.*, T1.team_name AS player_team_name
+				FROM
+					(SELECT DISTINCT PM1.*, PM2.player_team_id AS opposite_team_id
+					FROM 
+						(SELECT DISTINCT PM0.player_id,PM0.match_id,PM0.player_team_id, P1.player_name 
+						FROM
+						Player_Match PM0
+						INNER JOIN 
+								(SELECT DISTINCT player_id, player_name  
+								FROM Player 
+								WHERE player_name = 'CJ Jordan') P1
+								ON PM0.player_id = P1.player_id) PM1
+					INNER JOIN 
+							(SELECT DISTINCT match_id, player_team_id
+							FROM Player_Match) PM2
+							ON PM1.match_id = PM2.match_id AND PM1.player_team_id <> PM2.player_team_id)PM3
+				INNER JOIN 
+						(SELECT DISTINCT team_id, team_name 
+						FROM Team
+						WHERE team_name = 'Royal Challengers Bangalore') T1
+						ON PM3.player_team_id = T1.team_id)PM4
+			INNER JOIN
+					(SELECT DISTINCT team_id, team_name 
+					FROM Team
+					WHERE team_name = 'Gujarat Lions') T2
+					ON PM4.opposite_team_id = T2.team_id)PM5
+		INNER JOIN 
+				(SELECT DISTINCT match_id
+				FROM Matchinfo
+				WHERE match_date = '2016-05-14' AND YEAR(match_date) = 2016)M1
+				ON PM5.match_id = M1.match_id) PMM
+	LEFT JOIN 
+		(SELECT match_id, out_type, bowler
+		FROM Ball
+		WHERE out_type NOT IN ('Not Applicable','obstructing the field','retired hurt','run out') ) B3
+		ON PMM.match_id = B3.match_id AND PMM.player_id = B3.bowler)PM6
+GROUP BY PM6.player_name;
+				
+
+				
+
+/*
+Query 9
+To retrieve a specific Player stats (Bowler Strike rate = Number of runs given/balls bowled), with filters applied for a specific season, date, team, opposite team (opposition)
+
+*/
+
+SELECT (SUM(PM6.runs_given)/COUNT(PM6.runs_given)) AS bowler_strike_rate
+FROM
+	(SELECT PMM.*, B2.runs_given
+	FROM 
+		(SELECT PM5.*
+		FROM
+			(SELECT PM4.*, T2.team_name AS opposite_team_name
+			FROM
+				(SELECT PM3.*, T1.team_name AS player_team_name
+				FROM
+					(SELECT DISTINCT PM1.*, PM2.player_team_id AS opposite_team_id
+					FROM 
+						(SELECT DISTINCT PM0.player_id,PM0.match_id,PM0.player_team_id, P1.player_name 
+						FROM
+						Player_Match PM0
+						INNER JOIN 
+								(SELECT DISTINCT player_id, player_name  
+								FROM Player 
+								WHERE player_name = 'CJ Jordan') P1
+								ON PM0.player_id = P1.player_id) PM1
+					INNER JOIN 
+							(SELECT DISTINCT match_id, player_team_id
+							FROM Player_Match) PM2
+							ON PM1.match_id = PM2.match_id AND PM1.player_team_id <> PM2.player_team_id)PM3
+				INNER JOIN 
+						(SELECT DISTINCT team_id, team_name 
+						FROM Team
+						WHERE team_name = 'Royal Challengers Bangalore') T1
+						ON PM3.player_team_id = T1.team_id)PM4
+			INNER JOIN
+					(SELECT DISTINCT team_id, team_name 
+					FROM Team
+					WHERE team_name = 'Gujarat Lions') T2
+					ON PM4.opposite_team_id = T2.team_id)PM5
+		INNER JOIN 
+				(SELECT DISTINCT match_id
+				FROM Matchinfo
+				WHERE match_date = '2016-05-14' AND YEAR(match_date) = 2016)M1
+				ON PM5.match_id = M1.match_id) PMM
+	LEFT JOIN 
+			(SELECT match_id, (runs_scored+extra_runs) as runs_given, bowler
+			FROM Ball) B2
+			ON PMM.match_id = B2.match_id AND PMM.player_id = B2.bowler)PM6
+GROUP BY PM6.player_name;
+				
+
+				
+
+/*
+Query 10
+To retrieve a specific Team stats (#Matches, #Wins, #Win Ratio), with filters applied for a specific season
+Note: Match Date filter has been excluded compared to the front end/dashboard design to get more information (different matches) for testing purposes (makes more sense for standalone query). However, while using this query for dashboard, we have all filters(including the Match date).
+
+*/
+SELECT COUNT(DISTINCT CORE.match_id) AS Number_of_Matches, COUNT(CORE.match_winner_id) AS Number_of_wins, (COUNT(CORE.match_winner_id)/COUNT(DISTINCT CORE.match_id)) AS win_ratio
+FROM
+	(SELECT M2.*
+	FROM 
+		(SELECT M1.*,  WINNER.match_winner_id
+		FROM
+			(SELECT DISTINCT match_id, home_team_id AS current_team, visiting_team_id AS opposite_team
+			FROM Matchinfo
+			WHERE YEAR(match_date) = 2016
+			UNION
+			SELECT DISTINCT match_id, visiting_team_id AS current_team, home_team_id AS opposite_team
+			FROM Matchinfo
+			WHERE YEAR(match_date) = 2016)M1
+		LEFT JOIN
+				(SELECT DISTINCT match_id, match_winner_id
+				FROM Matchinfo
+				WHERE YEAR(match_date) = 2016) WINNER
+				ON M1.match_id = WINNER.match_id AND M1.current_team = WINNER.match_winner_id)M2
+	INNER JOIN 
+			(SELECT DISTINCT team_id, team_name
+			FROM Team
+			WHERE team_name = 'Royal Challengers Bangalore') T1
+			ON M2.current_team = T1.team_id)CORE;
+			
+	 
+	 
+	 
+/*
+Query 11
+To retrieve a specific Team stats (batter strike rate (runs scored by all batters in a team/balls faced by all batters in a team)*100), with filters applied for a specific season, Match Date
+*/
+SELECT (SUM(CORE.runs_scored)/COUNT(CORE.runs_scored))*100 AS batter_strike_rate
+FROM
+(SELECT B3.*
+FROM
+	(SELECT B2.*
+	FROM 
+		(SELECT B1.*, PM1.player_team_id
+		FROM 
+			(SELECT match_id, runs_scored, striker
+			FROM Ball) B1
+		INNER JOIN Player_Match PM1 ON B1.match_id = PM1.match_id AND B1.striker = PM1.player_id) B2
+	INNER JOIN 
+			(SELECT DISTINCT team_id, team_name
+			FROM Team 
+			WHERE team_name = 'Royal Challengers Bangalore') T1
+			ON B2.player_team_id = T1.team_id) B3
+INNER JOIN 
+		(SELECT DISTINCT match_id 
+		FROM Matchinfo
+		WHERE match_date = '2016-05-14' AND YEAR(match_date) = 2016) M1
+		ON B3.match_id = M1.match_id) CORE;
+		
+		
+/*
+Query 12
+To retrieve a specific Team stats (bowler strike rate (total runs given by all bowlers in a team/total balls bowled by all bowlers in a team)), with filters applied for a specific season, Match Date
+*/
+SELECT (SUM(CORE.runs_given)/COUNT(CORE.runs_given)) AS bowler_strike_rate
+FROM
+(SELECT B3.*
+FROM
+	(SELECT B2.*
+	FROM 
+		(SELECT B1.*, PM1.player_team_id
+		FROM 
+			(SELECT match_id, (runs_scored+extra_runs) as runs_given, bowler
+			FROM Ball) B1
+		INNER JOIN Player_Match PM1 ON B1.match_id = PM1.match_id AND B1.bowler = PM1.player_id) B2
+	INNER JOIN 
+			(SELECT DISTINCT team_id, team_name
+			FROM Team 
+			WHERE team_name = 'Royal Challengers Bangalore') T1
+			ON B2.player_team_id = T1.team_id) B3
+INNER JOIN 
+		(SELECT DISTINCT match_id 
+		FROM Matchinfo
+		WHERE match_date = '2016-05-14' AND YEAR(match_date) = 2016) M1
+		ON B3.match_id = M1.match_id) CORE;

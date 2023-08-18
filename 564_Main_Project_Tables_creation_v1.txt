@@ -1,0 +1,118 @@
+CREATE DATABASE cricket_app;
+
+SHOW DATABASES;
+
+USE cricket_app;
+
+
+
+CREATE TABLE Player (
+player_id INT,
+player_name VARCHAR(255),
+dob DATE,
+batting_hand VARCHAR(50),
+bowling_skill VARCHAR(50),
+country_name VARCHAR(50),
+player_user_thoughts VARCHAR(1000),
+
+PRIMARY KEY (player_id)
+);
+
+LOAD DATA INFILE "C:/ProgramData/MySQL/MySQL Server 8.0/Uploads/final_data_564/final_data_564/player.csv" INTO TABLE Player FIELDS TERMINATED BY "," LINES TERMINATED BY "\r\n" IGNORE 1 LINES;
+
+
+------------------
+
+CREATE TABLE Matchinfo (
+match_id BIGINT,
+home_team_id INT,
+visiting_team_id INT,
+match_date DATE,
+venue_name VARCHAR(255),
+toss_winner_id INT,
+match_winner_id INT,
+toss_decision VARCHAR(25),
+outcome_type VARCHAR(50),
+man_of_match_player_id INT,
+win_margin INT,
+
+
+PRIMARY KEY (match_id)
+);
+
+LOAD DATA INFILE "C:/ProgramData/MySQL/MySQL Server 8.0/Uploads/final_data_564/final_data_564/match.csv" INTO TABLE Matchinfo FIELDS TERMINATED BY "," LINES TERMINATED BY "\r\n" IGNORE 1 LINES;
+
+-------------------------------
+
+CREATE TABLE Ball (
+match_id BIGINT,
+over_no INT,
+ball_no INT,
+innings_no INT,
+striker_batting_position INT,
+extra_type VARCHAR(50),
+runs_scored INT,
+extra_runs INT,
+out_type VARCHAR(50),
+striker INT,
+non_striker INT,
+bowler INT,
+player_out INT,
+fielders INT,
+
+PRIMARY KEY (match_id, over_no, ball_no, innings_no)
+);
+
+
+LOAD DATA INFILE "C:/ProgramData/MySQL/MySQL Server 8.0/Uploads/final_data_564/final_data_564/ball_by_ball.csv" INTO TABLE Ball FIELDS TERMINATED BY "," LINES TERMINATED BY "\r\n" IGNORE 1 LINES;
+
+
+-----------------------
+
+CREATE TABLE Player_Match (
+match_id BIGINT,
+player_id INT,
+role_desc VARCHAR(50),
+player_team_id INT,
+PRIMARY KEY (match_id, player_id )
+);
+
+LOAD DATA INFILE "C:/ProgramData/MySQL/MySQL Server 8.0/Uploads/final_data_564/final_data_564/player_match.csv" INTO TABLE Player_Match FIELDS TERMINATED BY "," LINES TERMINATED BY "\r\n" IGNORE 1 LINES;
+
+
+------------------------------------
+
+CREATE TABLE Team (
+team_id INT,
+team_name VARCHAR(50),
+year_started INT,
+base_city VARCHAR(50),
+active_status VARCHAR(5),
+team_user_thoughts VARCHAR(1000),
+
+PRIMARY KEY (team_id)
+);
+
+LOAD DATA INFILE "C:/ProgramData/MySQL/MySQL Server 8.0/Uploads/final_data_564/final_data_564/team.csv" INTO TABLE Team FIELDS TERMINATED BY "," LINES TERMINATED BY "\r\n" IGNORE 1 LINES;
+
+
+----------------------
+
+CREATE TABLE Location (
+city_name VARCHAR(50),
+country_name VARCHAR(50),
+PRIMARY KEY (city_name)
+);
+
+LOAD DATA INFILE "C:/ProgramData/MySQL/MySQL Server 8.0/Uploads/final_data_564/final_data_564/location.csv" INTO TABLE Location FIELDS TERMINATED BY "," LINES TERMINATED BY "\r\n" IGNORE 1 LINES;
+
+
+-----------------
+
+CREATE TABLE Stadium (
+venue_name VARCHAR(255),
+city_name VARCHAR(50),
+PRIMARY KEY (venue_name)
+);
+
+LOAD DATA INFILE "C:/ProgramData/MySQL/MySQL Server 8.0/Uploads/final_data_564/final_data_564/stadium.csv" INTO TABLE Stadium FIELDS TERMINATED BY "," LINES TERMINATED BY "\r\n" IGNORE 1 LINES;
