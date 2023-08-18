@@ -1,0 +1,44 @@
+SELECT (SUM(PM6.runs_given)/COUNT(PM6.runs_given)) AS bowler_strike_rate
+FROM
+	(SELECT PMM.*, B2.runs_given
+	FROM 
+		(SELECT PM5.*
+		FROM
+			(SELECT PM4.*, T2.team_name AS opposite_team_name
+			FROM
+				(SELECT PM3.*, T1.team_name AS player_team_name
+				FROM
+					(SELECT DISTINCT PM1.*, PM2.player_team_id AS opposite_team_id
+					FROM 
+						(SELECT DISTINCT PM0.player_id,PM0.match_id,PM0.player_team_id, P1.player_name 
+						FROM
+						Player_Match PM0
+						INNER JOIN 
+								(SELECT DISTINCT player_id, player_name  
+								FROM Player 
+								WHERE player_name_filter_fd) P1
+								ON PM0.player_id = P1.player_id) PM1
+					INNER JOIN 
+							(SELECT DISTINCT match_id, player_team_id
+							FROM Player_Match) PM2
+							ON PM1.match_id = PM2.match_id AND PM1.player_team_id <> PM2.player_team_id)PM3
+				INNER JOIN 
+						(SELECT DISTINCT team_id, team_name 
+						FROM Team
+						WHERE team_filter_fd) T1
+						ON PM3.player_team_id = T1.team_id)PM4
+			INNER JOIN
+					(SELECT DISTINCT team_id, team_name 
+					FROM Team
+					WHERE opposite_team_filter_fd) T2
+					ON PM4.opposite_team_id = T2.team_id)PM5
+		INNER JOIN 
+				(SELECT DISTINCT match_id
+				FROM Matchinfo
+				WHERE match_date_filter_fd AND season_filter_fd)M1
+				ON PM5.match_id = M1.match_id) PMM
+	LEFT JOIN 
+			(SELECT match_id, (runs_scored+extra_runs) as runs_given, bowler
+			FROM Ball) B2
+			ON PMM.match_id = B2.match_id AND PMM.player_id = B2.bowler)PM6
+GROUP BY PM6.player_name;

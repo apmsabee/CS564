@@ -1,0 +1,50 @@
+SELECT CORE.over_no AS over_number, SUM(CORE.runs_scored) AS runs_scored
+FROM
+	(SELECT B3.*, M1.match_date,  YEAR(match_date) AS season
+	FROM
+		(SELECT B2.*, PPMT2.player_name AS bowler_name,PPMT2.team_name AS bowler_team_name
+		FROM 
+			(SELECT B1.*, PPMT1.player_name AS batter_name, PPMT1.team_name AS batter_team_name
+			FROM 
+				(SELECT * 
+				FROM Ball 
+				WHERE innings_filter_fd)  B1
+			INNER JOIN (
+						SELECT PPM1.*, T1.team_name
+						FROM
+							(SELECT PM1.*, P1.player_name
+							FROM Player_Match PM1
+							INNER JOIN 
+									(SELECT * 
+									FROM Player
+									WHERE batter_name_filter_fd ) P1
+									ON PM1.player_id = P1.player_id)PPM1
+						INNER JOIN 
+								(SELECT * 
+								FROM Team 
+								WHERE team_filter_fd)T1  
+								ON PPM1.player_team_id = T1.team_id)PPMT1
+						ON B1.striker = PPMT1.player_id AND B1.match_id = PPMT1.match_id)B2
+		INNER JOIN (
+					SELECT PPM2.*, T2.team_name
+					FROM
+						(SELECT PM2.*, P2.player_name
+						FROM Player_Match PM2
+						INNER JOIN 
+								(SELECT * 
+								FROM Player 
+								WHERE bowler_name_filter_fd)P2
+								ON PM2.player_id = P2.player_id)PPM2
+					INNER JOIN 
+							(SELECT * 
+							FROM Team 
+							WHERE opposite_team_filter_fd)T2 
+							ON PPM2.player_team_id = T2.team_id)PPMT2
+					ON B2.bowler = PPMT2.player_id AND B2.match_id = PPMT2.match_id) B3
+	INNER JOIN 
+			(SELECT * 
+			FROM Matchinfo 
+			WHERE match_date_filter_fd AND season_filter_fd)M1
+			ON B3.match_id = M1.match_id) CORE 
+GROUP BY CORE.over_no
+ORDER BY CORE.over_no ASC;

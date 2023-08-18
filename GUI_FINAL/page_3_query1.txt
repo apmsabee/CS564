@@ -1,0 +1,23 @@
+SELECT COUNT(DISTINCT CORE.match_id) AS Number_of_Matches, COUNT(CORE.match_winner_id) AS Number_of_wins, (COUNT( CORE.match_winner_id)/COUNT(DISTINCT CORE.match_id)) AS win_ratio
+FROM
+	(SELECT M2.*
+	FROM 
+		(SELECT M1.*,  WINNER.match_winner_id
+		FROM
+			(SELECT DISTINCT match_id, home_team_id AS current_team, visiting_team_id AS opposite_team
+			FROM Matchinfo
+			WHERE match_date_filter_fd AND season_filter_fd
+			UNION
+			SELECT DISTINCT match_id, visiting_team_id AS current_team, home_team_id AS opposite_team
+			FROM Matchinfo
+			WHERE match_date_filter_fd AND season_filter_fd)M1
+		LEFT JOIN
+				(SELECT DISTINCT match_id, match_winner_id
+				FROM Matchinfo
+				WHERE match_date_filter_fd AND season_filter_fd) WINNER
+				ON M1.match_id = WINNER.match_id AND M1.current_team = WINNER.match_winner_id)M2
+	INNER JOIN 
+			(SELECT DISTINCT team_id, team_name
+			FROM Team
+			WHERE team_filter_fd) T1
+			ON M2.current_team = T1.team_id)CORE;

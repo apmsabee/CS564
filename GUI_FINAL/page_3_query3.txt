@@ -1,0 +1,21 @@
+SELECT (SUM(CORE.runs_given)/COUNT(CORE.runs_given)) AS bowler_strike_rate
+FROM
+(SELECT B3.*
+FROM
+	(SELECT B2.*
+	FROM 
+		(SELECT B1.*, PM1.player_team_id
+		FROM 
+			(SELECT match_id, (runs_scored+extra_runs) as runs_given, bowler
+			FROM Ball) B1
+		INNER JOIN Player_Match PM1 ON B1.match_id = PM1.match_id AND B1.bowler = PM1.player_id) B2
+	INNER JOIN 
+			(SELECT DISTINCT team_id, team_name
+			FROM Team 
+			WHERE team_filter_fd) T1
+			ON B2.player_team_id = T1.team_id) B3
+INNER JOIN 
+		(SELECT DISTINCT match_id 
+		FROM Matchinfo
+		WHERE match_date_filter_fd AND season_filter_fd) M1
+		ON B3.match_id = M1.match_id) CORE;

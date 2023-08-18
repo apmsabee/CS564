@@ -1,0 +1,4 @@
+SELECT player_user_thoughts
+FROM player
+WHERE player_name_filter_fd
+;

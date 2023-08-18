@@ -1,0 +1,4 @@
+SELECT team_user_thoughts
+FROM team
+WHERE team_filter_fd
+;
